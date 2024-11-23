@@ -1,6 +1,7 @@
 using DemoForum.Models;
 using DemoForum.Services.Db;
 using DemoForum.Services.Db.Implementations.Ef;
+using DemoForum.Services.Db.Implementations.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Thread = DemoForum.Models.Thread;
 
@@ -8,9 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 //register database services
 builder.Services.AddDbContext<UserDb>(opt => opt.UseInMemoryDatabase("Users"));
-builder.Services.AddDbContext<ISubforumStore, SubforumDb>(opt => opt.UseInMemoryDatabase("Subforums"));
+//builder.Services.AddDbContext<ISubforumStore, SubforumDb>(opt => opt.UseInMemoryDatabase("Subforums"));
 builder.Services.AddDbContext<ReplyDb>(opt => opt.UseInMemoryDatabase("Replies"));
 builder.Services.AddDbContext<ThreadDb>(opt => opt.UseInMemoryDatabase("Threads"));
+
+builder.Services.AddSingleton<ISubforumStore, PostgresDatabase>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // add openAPI
@@ -78,7 +81,7 @@ app.MapGet("/subforums/{id}/threads", async (int id, ThreadDb threadDb) =>
         .ToArrayAsync());
 
 // create a thread
-app.MapPost("/threads", async (Thread thread, ThreadDb threadDb, SubforumDb subforumDb) =>
+app.MapPost("/threads", async (Thread thread, ThreadDb threadDb, ISubforumStore subforumDb) =>
 {
     if(string.IsNullOrWhiteSpace(thread.Title))
         return Results.BadRequest("Thread must have a title");
@@ -86,20 +89,21 @@ app.MapPost("/threads", async (Thread thread, ThreadDb threadDb, SubforumDb subf
     if(string.IsNullOrWhiteSpace(thread.Content))
         return Results.BadRequest("Thread must have content");
 
-    var subforum = await subforumDb.Subforums.FindAsync(thread.SubforumId);
-    if(subforum is null)
-        return Results.BadRequest("Subforum does not exist");
+    // var subforum = await subforumDb.Subforums.FindAsync(thread.SubforumId);
+    // if(subforum is null)
+    //     return Results.BadRequest("Subforum does not exist");
 
-    if(!subforum.NewThreadsOpen)
-        return Results.BadRequest("Subforum not accepting new threads");
+    // if(!subforum.NewThreadsOpen)
+    //     return Results.BadRequest("Subforum not accepting new threads");
 
     // set the creation time before storing the thread
     thread.CreationTime = DateTime.Now;
 
-    threadDb.Threads.Add(thread);
-    await threadDb.SaveChangesAsync();
+    // threadDb.Threads.Add(thread);
+    // await threadDb.SaveChangesAsync();
 
-    return Results.Created($"/threads/{thread.Id}", thread);
+    // return Results.Created($"/threads/{thread.Id}", thread);
+    return Results.InternalServerError();
 });
 
 // get a thread
