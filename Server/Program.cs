@@ -81,7 +81,7 @@ app.MapGet("/subforums/{id}/threads", async (int id, ThreadDb threadDb) =>
         .ToArrayAsync());
 
 // create a thread
-app.MapPost("/threads", async (Thread thread, ThreadDb threadDb, ISubforumStore subforumDb) =>
+app.MapPost("/threads", async (Thread thread, ThreadDb threadDb, ISubforumStore subforumStore) =>
 {
     if(string.IsNullOrWhiteSpace(thread.Title))
         return Results.BadRequest("Thread must have a title");
@@ -89,15 +89,12 @@ app.MapPost("/threads", async (Thread thread, ThreadDb threadDb, ISubforumStore 
     if(string.IsNullOrWhiteSpace(thread.Content))
         return Results.BadRequest("Thread must have content");
 
-    // var subforum = await subforumDb.Subforums.FindAsync(thread.SubforumId);
-    // if(subforum is null)
-    //     return Results.BadRequest("Subforum does not exist");
+    var subforum = await subforumStore.GetById(thread.SubforumId);
+    if(subforum is null)
+        return Results.BadRequest("Subforum does not exist");
 
-    // if(!subforum.NewThreadsOpen)
-    //     return Results.BadRequest("Subforum not accepting new threads");
-
-    // set the creation time before storing the thread
-    thread.CreationTime = DateTime.Now;
+    if(!subforum.NewThreadsOpen)
+        return Results.BadRequest("Subforum not accepting new threads");
 
     // threadDb.Threads.Add(thread);
     // await threadDb.SaveChangesAsync();
