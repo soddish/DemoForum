@@ -8,4 +8,5 @@ public class Thread
     public DateTime CreationTime { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
+    public bool RepliesOpen { get; set; }
 }
