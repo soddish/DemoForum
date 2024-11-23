@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS
 INSERT INTO
     subforums (name, newThreadsOpen)
 VALUES
-    $name, $newThreadsOpen
+    (@name, @newThreadsOpen)
 RETURNING
     id;");
 
