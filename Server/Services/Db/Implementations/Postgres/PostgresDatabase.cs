@@ -122,9 +122,35 @@ FROM
         return [.. results];
     }
 
-    Task<Subforum?> ISubforumStore.GetById(int subforumId)
+    async Task<Subforum?> ISubforumStore.GetById(int subforumId)
     {
-        throw new NotImplementedException();
+        var command = await CreateCommand(@"
+SELECT
+    id,
+    name,
+    newThreadsOpen
+FROM
+    subforums
+WHERE
+    id = @id;
+MAX 1");
+
+        command.Parameters.AddWithValue("id", NpgsqlTypes.NpgsqlDbType.Integer, subforumId);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        Subforum? result = null;
+        while(await reader.ReadAsync())
+        {
+            result = new Subforum
+            {
+                Id = reader.GetInt32(0),
+                Name = reader.GetString(1),
+                NewThreadsOpen = reader.GetBoolean(2)
+            };
+        }
+
+        return result;
     }
 
     Task<bool> ISubforumStore.Update(int id, Subforum subforum)
