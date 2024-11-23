@@ -1,4 +1,4 @@
-using Thead = DemoForum.Models.Thread;
+using Thread = DemoForum.Models.Thread;
 using Microsoft.EntityFrameworkCore;
 
 namespace DemoForum.Services.Db;
