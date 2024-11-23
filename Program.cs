@@ -105,6 +105,22 @@ app.MapGet("/threads/{id}", async (int id, ThreadDb threadDb) =>
         return Results.NotFound();
 });
 
+app.MapPut("/threads/{id}", async (int id, Thread inputThread, ThreadDb threadDb) =>
+{
+    var thread = await threadDb.Threads.FindAsync(id);
+
+    if(thread is null)
+        return Results.NotFound();
+
+    thread.SubforumId = inputThread.SubforumId;
+    thread.Title = inputThread.Title;
+    thread.RepliesOpen = inputThread.RepliesOpen;
+
+    await threadDb.SaveChangesAsync();
+
+    return Results.NoContent();
+});
+
 // get replies for a thread
 app.MapGet("/threads/{id}/replies", async (int id, ReplyDb replyDb) =>
     await replyDb.Replies
