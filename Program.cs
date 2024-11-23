@@ -71,6 +71,7 @@ app.MapPut("/subforums/{id}", async (int id, Subforum inputSubforum, SubforumDb 
         return Results.NotFound();
 
     subforum.Name = inputSubforum.Name;
+    subforum.NewThreadsOpen = inputSubforum.NewThreadsOpen;
 
     await subforumDb.SaveChangesAsync();
 
