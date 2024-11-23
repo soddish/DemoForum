@@ -1,5 +1,6 @@
 using DemoForum.Models;
 using DemoForum.Services.Db;
+using DemoForum.Services.Db.Implementations.Ef;
 using Microsoft.EntityFrameworkCore;
 using Thread = DemoForum.Models.Thread;
 
