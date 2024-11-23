@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 //register database services
 builder.Services.AddDbContext<UserDb>(opt => opt.UseInMemoryDatabase("Users"));
-builder.Services.AddDbContext<SubforumDb>(opt => opt.UseInMemoryDatabase("Subforums"));
+builder.Services.AddDbContext<ISubforumStore, SubforumDb>(opt => opt.UseInMemoryDatabase("Subforums"));
 builder.Services.AddDbContext<ReplyDb>(opt => opt.UseInMemoryDatabase("Replies"));
 builder.Services.AddDbContext<ThreadDb>(opt => opt.UseInMemoryDatabase("Threads"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -39,14 +39,13 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => "Hello World!");
 
 // get a list of available subforums
-app.MapGet("/subforums", async (SubforumDb subforumDb) =>
-    await subforumDb.Subforums.ToArrayAsync());
+app.MapGet("/subforums", async (ISubforumStore subforumStore) =>
+    await subforumStore.GetAll());
 
 // get a subforum
-app.MapGet("/subforums/{id}", async (int id, SubforumDb subforumDb) =>
+app.MapGet("/subforums/{id}", async (int id, ISubforumStore subforumStore) =>
 {
-    var subforum = await subforumDb.Subforums
-        .FindAsync(id);
+    var subforum = await subforumStore.GetById(id);
 
     if(subforum is not null)
         return Results.Ok(subforum);
@@ -55,28 +54,20 @@ app.MapGet("/subforums/{id}", async (int id, SubforumDb subforumDb) =>
 });
 
 // create a subforum
-app.MapPost("/subforums", async (Subforum subforum, SubforumDb subforumDb) =>
+app.MapPost("/subforums", async (Subforum subforum, ISubforumStore subforumStore) =>
 {
-    subforumDb.Subforums.Add(subforum);
-    await subforumDb.SaveChangesAsync();
-
+    await subforumStore.Add(subforum);
     return Results.Created($"/subforums/{subforum.Id}", subforum);
 });
 
 // update a subforum
-app.MapPut("/subforums/{id}", async (int id, Subforum inputSubforum, SubforumDb subforumDb) =>
+app.MapPut("/subforums/{id}", async (int id, Subforum inputSubforum, ISubforumStore subforumStore) =>
 {
-    var subforum = await subforumDb.Subforums.FindAsync(id);
-
-    if(subforum is null)
+    var result = await subforumStore.Update(id, inputSubforum);
+    if(result)
+        return Results.NoContent();
+    else
         return Results.NotFound();
-
-    subforum.Name = inputSubforum.Name;
-    subforum.NewThreadsOpen = inputSubforum.NewThreadsOpen;
-
-    await subforumDb.SaveChangesAsync();
-
-    return Results.NoContent();
 });
 
 // get a list of the threads that have been created in a subforum
