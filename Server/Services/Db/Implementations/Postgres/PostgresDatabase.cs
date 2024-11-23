@@ -17,14 +17,14 @@ public class PostgresDatabase(IConfiguration configuration) :
         var command = datasource.CreateCommand(@"
 CREATE TABLE IF NOT EXISTS
     subforums (
-        id INT NOT NULL PRIMARY KEY, 
+        id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
         name TEXT NOT NULL, 
         newThreadsOpen BOOLEAN NOT NULL
     );
     
 CREATE TABLE IF NOT EXISTS
     replies (
-        id INT NOT NULL PRIMARY KEY, 
+        id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
         userId INT NOT NULL,
         creationTime INT NOT NULL,
         parentThreadId INT NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS
         
 CREATE TABLE IF NOT EXISTS
     threads (
-        id INT NOT NULL PRIMARY KEY,
+        id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         userId INT NOT NULL,
         subforumId INT NOT NULL,
         creationTime INT NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS
         
 CREATE TABLE IF NOT EXISTS
     users (
-        id INT NOT NULL PRIMARY KEY,
+        id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         creationTime INT NOT NULL,
         userName TEXT NOT NULL,
         isAdmin BOOLEAN NOT NULL,
